@@ -8,7 +8,7 @@ const WalletInput: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const provider = new ethers.providers.EtherscanProvider("homestead", "PMWGSTAXA3VKW7CG4R7KWYAYVWJICE6SNZ");
+  const provider = new ethers.providers.EtherscanProvider("homestead", process.env.REACT_APP_API_KEY_ETHERSCAN);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
