@@ -29,6 +29,10 @@ const WalletGraph: React.FC = () => {
     return transactions.slice(-1000); // Get the most recent 1000 transactions
   };
 
+  const truncate = (str: string, n: number): string => {
+    return (str.length > n) ? str.slice(0, n-1) + '...' : str;
+  };
+
   const transformTransactionsToGraph = (transactions: ethers.providers.TransactionResponse[]): GraphData => {
     const nodes = new Set<string>();
     const links: Link[] = [];
@@ -94,7 +98,7 @@ const WalletGraph: React.FC = () => {
         .attr("fill", "steelblue");
 
       node.append("text")
-        .text(d => d.id)
+        .text(d => truncate(d.id, 7))
         .attr('x', 6)
         .attr('y', 3);
 
@@ -114,14 +118,14 @@ const WalletGraph: React.FC = () => {
   }, [graphData]);
 
   const ticked = (
-    link: d3.Selection<SVGLineElement, Link, SVGGElement, unknown>,
-    node: d3.Selection<SVGGElement, Node, SVGGElement, unknown>
+    link: d3.Selection<SVGLineElement, Link, SVGGElement, Link>,
+    node: d3.Selection<SVGGElement, Node, SVGGElement, Node>
   ) => {
     link
-      .attr("x1", (d) => (d.source as Node).x ?? 0)
-      .attr("y1", (d) => (d.source as Node).y ?? 0)
-      .attr("x2", (d) => (d.target as Node).x ?? 0)
-      .attr("y2", (d) => (d.target as Node).y ?? 0);
+    .attr("x1", (d) => (d.source instanceof Object && 'x' in d.source) ? (d.source as Node).x ?? 0 : 0)
+    .attr("y1", (d) => (d.source instanceof Object && 'y' in d.source) ? (d.source as Node).y ?? 0 : 0)
+    .attr("x2", (d) => (d.target instanceof Object && 'x' in d.target) ? (d.target as Node).x ?? 0 : 0)
+    .attr("y2", (d) => (d.target instanceof Object && 'y' in d.target) ? (d.target as Node).y ?? 0 : 0);
   
     node.attr("transform", (d) => `translate(${d.x ?? 0},${d.y ?? 0})`);
   };
