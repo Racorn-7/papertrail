@@ -57,7 +57,7 @@ const WalletGraph: React.FC = () => {
       nodes: Array.from(nodes).map(id => ({ id })),
       links
     };
-  };
+  }; 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,16 +76,33 @@ const WalletGraph: React.FC = () => {
 
       const simulation = d3.forceSimulation<Node>(graphData.nodes)
         .force("link", d3.forceLink<Node, Link>(graphData.links).id(d => d.id).distance(200))
-        .force("charge", d3.forceManyBody().strength(-300))
-        .force("center", d3.forceCenter(width / 2, height / 2));
+        .force("charge", d3.forceManyBody().strength(-500))
+        .force("center", d3.forceCenter(width / 2, height / 2))
+        .force("radial", d3.forceRadial(300, width / 2, height / 2)) // Radial layout
+        .force("collide", d3.forceCollide(50)); // Collision detection
+        
 
       const link = svg.append("g")
-        .attr("class", "links")
-        .selectAll("line")
-        .data(graphData.links)
-        .enter().append("line")
-        .attr("class", "link")
-        .attr("stroke-width", d => Math.sqrt(d.value));
+      .attr('stroke', '#999')
+      .attr('stroke-opacity', 0.6)
+      .selectAll('line')
+      .data(graphData.links)
+      .enter().append('line')
+      .attr('stroke-width', (d) => Math.sqrt(d.value));
+
+      link.attr("d", function(d) {
+        const dx = (d.target as Node).x! - (d.source as Node).x!,
+              dy = (d.target as Node).y! - (d.source as Node).y!,
+              dr = Math.sqrt(dx * dx + dy * dy);
+        return `M${(d.source as Node).x!},${(d.source as Node).y!}A${dr},${dr} 0 0,1 ${(d.target as Node).x!},${(d.target as Node).y!}`;});
+
+      link.on('mouseover', function (d) {
+        console.log('Transaction Value:', Number(d.value)); // Log the transaction value on hover
+        d3.select(this).attr('stroke', 'orange').attr('stroke-width', 3);
+      })
+      .on('mouseout', function () {
+        d3.select(this).attr('stroke', 'black').attr('stroke-width', 1);
+      });
 
       const node = svg.append("g")
         .attr("class", "nodes")
